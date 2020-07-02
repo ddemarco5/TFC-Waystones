@@ -1,3 +1,8 @@
+# Directories containing build output
+build/
+run/
+.idea/
+
 # Compiled class file
 *.class
 
