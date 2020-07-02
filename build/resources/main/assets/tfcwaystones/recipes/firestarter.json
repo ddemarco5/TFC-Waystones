@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "_comment": "other types are minecraft:crafting_shapeless, forge:ore_shaped, forge:ore_shapeless",
+  "_comment1": "see the registerR methods in CraftingHelper.init() and the corresponding factories, eg ShapedOreRecipe::factory",
+  "_comment2": "see mbe_35 StartupCommon for examples of how + why you might use each of these different types",
+  "ingredients": [
+    {
+      "type": "forge:ore_dict",
+      "ore": "stickWood"
+    }
+  ],
+  "result": {
+    "item": "tfc:firestarter"
+  }
+}
