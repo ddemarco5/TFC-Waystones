@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Implementation-Title: tfc_waystones
-Implementation-Version: 0.0
-Specification-Vendor: examplemodsareus
-Specification-Title: tfcwaystones
-Implementation-Timestamp: 2020-07-01T18:27:47-0700
-Specification-Version: 1
-Implementation-Vendor: examplemodsareus
-
