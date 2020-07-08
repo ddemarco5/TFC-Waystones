@@ -1,0 +1,19 @@
+{
+  "type": "tfc:damage_item_shapeless",
+
+  "ingredients":
+  [
+      {
+          "item": "tfc:metal/hammer/black_steel"
+      },
+      {
+          "type": "forge:ore_dict",
+          "ore": "obsidian"
+      }
+  ],
+  "result":
+  {
+      "item": "tfcwaystones:obsidian_rock",
+      "count": 4
+  }
+}

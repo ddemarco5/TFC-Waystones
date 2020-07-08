@@ -1,0 +1,16 @@
+[
+    {
+      "modid": "tfcwaystones",
+      "name": "TFC Waystones",
+      "description": "Integrates waystones into TFC",
+      "version": "${version}",
+      "mcversion": "${mcversion}",
+      "url": "https://github.com/ddemarco5/TFC-Waystones",
+      "updateUrl": "",
+      "authorList": ["ddemarco5"],
+      "credits": "TFC addons discord channel.",
+      "logoFile": "",
+      "screenshots": [],
+      "dependencies": []
+    }
+]

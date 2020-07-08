@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern":
+    [
+        "oo",
+        "oo"
+    ],
+    "key":
+    {
+        "o":
+        {
+          "type": "forge:ore_dict",
+          "ore": "rockObsidian"
+        }
+    },
+    "result":
+    {
+        "item": "minecraft:obsidian"
+    }
+}
