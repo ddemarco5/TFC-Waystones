@@ -1,14 +1,11 @@
-package com.example.TFCWaystones.item;
+package com.ddemarco5.TFCWaystones.item;
 
-import com.example.TFCWaystones.TFCWaystones;
-import com.example.TFCWaystones.gui.GuiHandler;
+import com.ddemarco5.TFCWaystones.TFCWaystones;
+import com.ddemarco5.TFCWaystones.gui.GuiHandler;
 import net.dries007.tfc.api.capability.size.Size;
 import net.dries007.tfc.api.capability.size.Weight;
-import net.dries007.tfc.api.recipes.knapping.KnappingType;
-import net.dries007.tfc.client.TFCGuiHandler;
 import net.dries007.tfc.objects.CreativeTabsTFC;
 import net.dries007.tfc.objects.items.ItemTFC;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 
 import net.minecraft.item.ItemStack;
@@ -16,6 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class ItemObsidianRock extends ItemTFC {
 
@@ -35,6 +33,11 @@ public class ItemObsidianRock extends ItemTFC {
     public Weight getWeight(ItemStack stack)
     {
         return Weight.VERY_LIGHT; // Stacksize = 64
+    }
+
+    public void registerOres() {
+        OreDictionary.registerOre("rock", this);
+        OreDictionary.registerOre("rockObsidian", this);
     }
 
 

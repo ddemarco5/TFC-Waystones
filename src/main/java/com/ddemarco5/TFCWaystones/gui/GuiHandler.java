@@ -1,6 +1,6 @@
-package com.example.TFCWaystones.gui;
+package com.ddemarco5.TFCWaystones.gui;
 
-import com.example.TFCWaystones.TFCWaystones;
+import com.ddemarco5.TFCWaystones.TFCWaystones;
 import net.dries007.tfc.api.recipes.knapping.KnappingType;
 import net.dries007.tfc.client.gui.GuiKnapping;
 import net.dries007.tfc.objects.container.ContainerKnapping;

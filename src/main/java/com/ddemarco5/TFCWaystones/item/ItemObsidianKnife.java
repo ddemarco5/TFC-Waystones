@@ -1,6 +1,6 @@
-package com.example.TFCWaystones.item;
+package com.ddemarco5.TFCWaystones.item;
 
-import com.example.TFCWaystones.TFCWaystones;
+import com.ddemarco5.TFCWaystones.TFCWaystones;
 import com.google.common.collect.Iterables;
 import net.dries007.tfc.api.capability.size.IItemSize;
 import net.dries007.tfc.api.capability.size.Size;
@@ -15,7 +15,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.util.ActionResult;
@@ -58,9 +57,9 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
     }
 
     public void registerOres(){
-        OreDictionary.registerOre("damageTypePiercing", (Item) this);
-        OreDictionary.registerOre("knife", (Item) this);
-        OreDictionary.registerOre("knifeStone", (Item) this);
+        OreDictionary.registerOre("damageTypePiercing", this);
+        OreDictionary.registerOre("knife", this);
+        OreDictionary.registerOre("knifeStone", this);
     }
 
 
