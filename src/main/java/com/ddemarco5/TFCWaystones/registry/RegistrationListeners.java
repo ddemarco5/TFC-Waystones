@@ -2,10 +2,7 @@ package com.ddemarco5.TFCWaystones.registry;
 
 import com.ddemarco5.TFCWaystones.TFCWaystones;
 import com.ddemarco5.TFCWaystones.gui.GuiHandler;
-import com.ddemarco5.TFCWaystones.item.ItemObsidianKnife;
-import com.ddemarco5.TFCWaystones.item.ItemObsidianKnifeHead;
-import com.ddemarco5.TFCWaystones.item.ItemObsidianRock;
-import com.ddemarco5.TFCWaystones.item.ItemWarpStone;
+import com.ddemarco5.TFCWaystones.item.*;
 import com.mojang.realmsclient.util.Pair;
 import net.dries007.tfc.api.recipes.knapping.KnappingRecipe;
 import net.dries007.tfc.api.recipes.knapping.KnappingRecipeSimple;
@@ -92,7 +89,10 @@ public class RegistrationListeners {
 
         ItemObsidianRock obsidianRock = new ItemObsidianRock();
         modRegistry.register(TFCWaystones.OBSIDIAN_ROCK = obsidianRock);
-        obsidianRock.registerOres();
+
+        ItemEmptyWarpStone emptyWarpStone = new ItemEmptyWarpStone();
+        modRegistry.register(TFCWaystones.EMPTY_WARP_STONE = emptyWarpStone);
+        emptyWarpStone.registerOres();
 
     }
 

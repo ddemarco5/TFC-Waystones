@@ -10,11 +10,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.entity.player.PlayerFlyableFallEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
@@ -26,14 +30,11 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.List;
 
+@Mod.EventBusSubscriber
 public class ItemWarpStone extends net.blay09.mods.waystones.item.ItemWarpStone implements IItemSize {
 
     private static final ResourceLocation resourceOverride = new ResourceLocation(Waystones.MOD_ID, "warp_stone");
     private static final int numCharges = 4;
-
-    public ItemWarpStone() {
-        super();
-    }
 
     public void patchResource() {
 
@@ -51,10 +52,12 @@ public class ItemWarpStone extends net.blay09.mods.waystones.item.ItemWarpStone 
 
     }
 
+    /*
     @Override
     public EnumAction getItemUseAction(ItemStack itemStack) {
         return EnumAction.DRINK;
     }
+    */
 
     @Override
     public Size getSize(ItemStack stack)
@@ -81,10 +84,20 @@ public class ItemWarpStone extends net.blay09.mods.waystones.item.ItemWarpStone 
         makeNBT(stack);
     }
 
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+        if (playerIn.getHeldItemMainhand().getItem() == Waystones.itemWarpStone) { // can only use in main hand
+            return super.onItemRightClick(worldIn, playerIn, handIn);
+        }
+        return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
+    }
 
     @Override
     public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
         ItemStack item = super.onItemUseFinish(stack, worldIn, entityLiving);
+        setTeleported(stack, true);
+
+        /*
         int chargesLeft = 0;
         if (stack.hasTagCompound() && stack.getTagCompound().hasKey("Charges")) {
             chargesLeft = stack.getTagCompound().getInteger("Charges");
@@ -93,10 +106,9 @@ public class ItemWarpStone extends net.blay09.mods.waystones.item.ItemWarpStone 
         else {
             TFCWaystones.logger.error("BAD! We don't have an NBT tag when we should!!!!");
         }
+        */
 
-        //if ((chargesLeft - 1) <= 0) {
-        //    return ItemStack.EMPTY;
-        //}
+
         return item;
 
     }
@@ -123,7 +135,61 @@ public class ItemWarpStone extends net.blay09.mods.waystones.item.ItemWarpStone 
     private void makeNBT(ItemStack stack) {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setInteger("Charges", numCharges);
+        nbt.setBoolean("Teleported", false);
         stack.setTagCompound(nbt);
+    }
+
+    private static void setTeleported(ItemStack stack, boolean bool) {
+        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("Teleported")) {
+            //TFCWaystones.logger.info("Setting teleported tag to: {}", bool);
+            boolean tag = stack.getTagCompound().getBoolean("Teleported");
+            stack.getTagCompound().setBoolean("Teleported", bool);
+        }
+    }
+
+    //// These two functions are a workaround for waystone charges.
+    //// You NEED the waystone's exact waystone item in your hand in order to teleport, but it always puts you
+    //// a little above the ground, so we can detect the fall event and change our item there
+    // This one is for survival mode
+    @SubscribeEvent
+    public static void fallEventSurvival(LivingFallEvent event) {
+        Entity entity = event.getEntity();
+        if (entity instanceof EntityPlayer) {
+            //TFCWaystones.logger.info("Teleported, Survival!");
+            handleWarpStone((EntityPlayer) entity);
+        }
+    }
+
+    // This one is for creative
+    @SubscribeEvent
+    public static void fallEventCreative(PlayerFlyableFallEvent event) {
+        Entity entity = event.getEntity();
+        if (entity instanceof EntityPlayer) {
+            //TFCWaystones.logger.info("Teleported, Creative!");
+            handleWarpStone((EntityPlayer) entity);
+        }
+    }
+
+    private static void handleWarpStone(EntityPlayer player) {
+        ItemStack item = player.getHeldItemMainhand();
+        NBTTagCompound tagcompound = item.getTagCompound();
+        if (item.hasTagCompound() && tagcompound.hasKey("Charges") && tagcompound.hasKey("Teleported")) {
+            boolean teleported = tagcompound.getBoolean("Teleported");
+            if ((item.getItem() instanceof ItemWarpStone) && teleported) { // We're holding the stone and we teleported
+                TFCWaystones.logger.info("Checking warpstone...");
+                if (item.getTagCompound().getInteger("Charges") <= 1) { // We used our last charge
+                    TFCWaystones.logger.info("Ur out of charges bich");
+                    // TODO: Make this the uncharged waystone instead of empty
+                    player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(TFCWaystones.EMPTY_WARP_STONE));
+                }
+                else { // We had charges and we use one
+                    TFCWaystones.logger.info("used a charge");
+                    int chargesLeft = item.getTagCompound().getInteger("Charges");
+                    item.getTagCompound().setInteger("Charges", chargesLeft - 1);
+                }
+                setTeleported(item, false);
+            }
+        }
     }
 
 

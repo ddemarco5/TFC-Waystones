@@ -1,9 +1,7 @@
 package com.ddemarco5.TFCWaystones;
 
 import com.ddemarco5.TFCWaystones.gui.GuiHandler;
-import com.ddemarco5.TFCWaystones.item.ItemObsidianKnife;
-import com.ddemarco5.TFCWaystones.item.ItemObsidianKnifeHead;
-import com.ddemarco5.TFCWaystones.item.ItemObsidianRock;
+import com.ddemarco5.TFCWaystones.item.*;
 import com.mojang.realmsclient.util.Pair;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
@@ -22,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Set;
 
 // Import our stuff
-import com.ddemarco5.TFCWaystones.item.ItemWarpStone;
-
 
 
 @Mod(modid = TFCWaystones.MOD_ID, name = TFCWaystones.NAME, version = TFCWaystones.VERSION, dependencies = "required-after:tfc@[1.5.2.152,);required-after:waystones@[4.1.0,);")
@@ -44,6 +40,7 @@ public class TFCWaystones
     public static ItemObsidianKnife OBSIDIAN_KNIFE;
     public static ItemObsidianRock OBSIDIAN_ROCK;
     public static ItemWarpStone WARP_STONE;
+    public static ItemEmptyWarpStone EMPTY_WARP_STONE;
 
     // Resource, Model
     public static ArrayList<Pair<String, String>> MODEL_OVERRIDES = new ArrayList<Pair<String, String>>();
@@ -58,10 +55,11 @@ public class TFCWaystones
 
 
         // Define our overrides
-        MODEL_OVERRIDES.add(Pair.of("waystones:warp_stone", "tfcwaystones:warp_stone_test"));
+        MODEL_OVERRIDES.add(Pair.of("waystones:warp_stone", "tfcwaystones:warp_stone"));
         MODEL_OVERRIDES.add(Pair.of("tfcwaystones:obsidian_knife", "tfcwaystones:obsidian_knife"));
         MODEL_OVERRIDES.add(Pair.of("tfcwaystones:obsidian_knife_head", "tfcwaystones:obsidian_knife_head"));
         MODEL_OVERRIDES.add(Pair.of("tfcwaystones:obsidian_rock", "tfcwaystones:obsidian_rock"));
+        MODEL_OVERRIDES.add(Pair.of("tfcwaystones:empty_warp_stone", "tfcwaystones:empty_warp_stone"));
 
     }
 

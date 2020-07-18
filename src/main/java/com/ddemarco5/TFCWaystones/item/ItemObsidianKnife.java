@@ -14,7 +14,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumAction;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.util.ActionResult;
@@ -177,8 +179,8 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
 
-        if (!worldIn.isRemote) {
-
+        if (!worldIn.isRemote && playerIn.getHeldItemMainhand().getItem() == TFCWaystones.OBSIDIAN_KNIFE &&
+            playerIn.getHeldItemOffhand().getItem() == TFCWaystones.EMPTY_WARP_STONE) {
             EntityAnimal animal;
             if ((animal = getAnimalAimedAt(playerIn)) != null) {
                 TFCWaystones.logger.info("success");
@@ -195,8 +197,8 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
         }
 
         // The client side always fails. This doesn't really seem to matter
-        TFCWaystones.logger.info("fail");
-        playerIn.resetActiveHand();
+        TFCWaystones.logger.info("dagger fail");
+        //playerIn.resetActiveHand();
         return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
     }
 
@@ -212,11 +214,20 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
                 TARGET_ANIMAL.setFire(10);
                 TARGET_ANIMAL.setDropItemsWhenDead(false);
                 TARGET_ANIMAL.attackEntityFrom(DamageSource.ON_FIRE, TARGET_ANIMAL.getMaxHealth());
+                TFCWaystones.EMPTY_WARP_STONE.addLife(player.getHeldItemOffhand(), (int)TARGET_ANIMAL.getMaxHealth());
                 itemStack.damageItem(1, entityLiving);
             } else {
                 TFCWaystones.logger.info("No longer pointing at the animal");
             }
+
+            ItemStack stone = entityLiving.getHeldItemOffhand();
+            if (stone.getItem() == TFCWaystones.EMPTY_WARP_STONE &&
+                    TFCWaystones.EMPTY_WARP_STONE.isCharged(stone)) { // If we've fully charged our stone
+                // TODO: -106 is the offhand inventory slot, find a constant for this or some way to programmatically do this
+                //player.inventory.setInventorySlotContents(-106, new ItemStack(TFCWaystones.WARP_STONE));
+            }
         }
+
 
         return itemStack;
     }
@@ -224,11 +235,14 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
     // Check every half second to make sure we're still tracking the target with the mouse
     @Override
     public void onUsingTick(ItemStack stack, EntityLivingBase player, int count) {
-        if ((count % 10) == 0) { // Every half second, 10 ticks
-            TFCWaystones.logger.info("checking...");
-            if (!player.getEntityWorld().isRemote && player instanceof EntityPlayer) {
-                if (!isAnimalClickable((EntityPlayer) player, TARGET_ANIMAL)) {
-                    player.resetActiveHand();
+        if (player.getHeldItemMainhand().getItem() == TFCWaystones.OBSIDIAN_KNIFE &&
+            player.getHeldItemOffhand().getItem() == TFCWaystones.EMPTY_WARP_STONE) { // if we aren't holding the knife and the empty stone
+            if ((count % 10) == 0) { // Every half second, 10 ticks
+                TFCWaystones.logger.info("checking...");
+                if (!player.getEntityWorld().isRemote && player instanceof EntityPlayer) {
+                    if (!isAnimalClickable((EntityPlayer) player, TARGET_ANIMAL)) {
+                        player.resetActiveHand();
+                    }
                 }
             }
         }
