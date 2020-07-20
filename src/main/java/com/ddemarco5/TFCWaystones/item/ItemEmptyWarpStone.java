@@ -12,7 +12,6 @@ import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
@@ -24,10 +23,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+//TODO: The life isn't successfully added to the item if the player scrolls the wheel to another item mid charge, the onPlayerStoppedUsing won't fire
+
 public class ItemEmptyWarpStone extends ItemTFC {
 
     private static final int MAX_LIFE = 1000;
-    private static int tmp_life_stolen = 0; // TODO: this shit almost definitely won't work a dedicated server, gotta figure that out
+    private static final int USE_DURATION = 36000;  // in ticks, 30 minutes
+
+    private static int LOCAL_CHARGE_DISP_VAL;
 
     public ItemEmptyWarpStone() {
         setRegistryName(TFCWaystones.MOD_ID, "empty_warp_stone");
@@ -43,53 +46,70 @@ public class ItemEmptyWarpStone extends ItemTFC {
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
 
-        tmp_life_stolen = 0;
-        if (playerIn.getHeldItemMainhand().getItem() == TFCWaystones.EMPTY_WARP_STONE){ // only if it's in the mainhand
-            if (!worldIn.isRemote) { // remote
-                TFCWaystones.logger.info("empty warpstone onclick");
-                if (playerIn.getHeldItemOffhand().getItem() == TFCWaystones.OBSIDIAN_KNIFE) { // If we have the dagger in offhand
-                    playerIn.setActiveHand(handIn);
-                    return new ActionResult<>(EnumActionResult.SUCCESS, playerIn.getHeldItem(handIn));
-                }
-                playerIn.resetActiveHand();
+        if (!worldIn.isRemote) { // remote
+            TFCWaystones.logger.info("empty warpstone onclick");
+            if (playerIn.getHeldItemOffhand().getItem() == TFCWaystones.OBSIDIAN_KNIFE &&
+                playerIn.getHeldItemMainhand().getItem() == TFCWaystones.EMPTY_WARP_STONE) { // If we have the dagger in offhand
+                playerIn.setActiveHand(handIn);
+                return new ActionResult<>(EnumActionResult.SUCCESS, playerIn.getHeldItem(handIn));
             }
+            TFCWaystones.logger.info("onclick conditions not met");
+            //playerIn.resetActiveHand();
         }
         return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
     }
 
     @Override
     public void onPlayerStoppedUsing(ItemStack stack, World worldIn, EntityLivingBase entityLiving, int timeLeft) {
-        if (!worldIn.isRemote) { // remote
-            if (tmp_life_stolen > 0) {
-                TFCWaystones.logger.info("Adding {} life", tmp_life_stolen);
-                addLife(stack, tmp_life_stolen);
-                tmp_life_stolen = 0;
+        if (!worldIn.isRemote) { // server code
+
+            int life_stolen = (USE_DURATION - timeLeft) - 1; // our time used minus our max time, offset for zero index
+            EntityPlayer player = (EntityPlayer)entityLiving;
+            TFCWaystones.logger.info("stopped using - {}", life_stolen);
+
+            if (life_stolen > 0) {
+                TFCWaystones.logger.info("Adding {} life to waystone", life_stolen);
+                addLife(stack, life_stolen);
             }
+
+            if (getLife(stack) == MAX_LIFE) { // if we're charged give the player a warp stone
+                player.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(TFCWaystones.WARP_STONE));
+                //player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(TFCWaystones.WARP_STONE));
+            }
+        }
+        else { // client code
+            LOCAL_CHARGE_DISP_VAL = 0; // Clear the local display val now that we've set the charge in the stone
         }
     }
 
     @Override
     public void onUsingTick(ItemStack stack, EntityLivingBase playerIn, int count) {
-        int life_to_drain = 1;
-        if (playerIn instanceof EntityPlayer && !playerIn.getEntityWorld().isRemote) {
+
+        if (!playerIn.world.isRemote) { // on server
+            int time_used = USE_DURATION - count - 1; // Index the count at 0
+            //TFCWaystones.logger.info("time used: {}", time_used);
+            float life_to_drain = 1.0f / TFCWaystones.TFC_HP_MOD;
             EntityPlayer player = (EntityPlayer) playerIn;
             if (playerIn.getHeldItemOffhand().getItem() == TFCWaystones.OBSIDIAN_KNIFE &&
-                    playerIn.getHeldItemMainhand().getItem() == TFCWaystones.EMPTY_WARP_STONE) { // if right tools and local
-                if (getLife(stack) + tmp_life_stolen < MAX_LIFE) { // If the stone isn't full
+                    playerIn.getHeldItemMainhand().getItem() == TFCWaystones.EMPTY_WARP_STONE) { // if right tools
+                //if (getLife(stack) + tmp_life_stolen < MAX_LIFE) { // If the stone isn't full
+                //TFCWaystones.logger.info("{} < {}",getLife(stack) + time_used, MAX_LIFE);
+                if ((getLife(stack) + time_used) < MAX_LIFE) { // If the stone isn't full
                     if (!player.capabilities.isCreativeMode) {
                         // Drain our life
-                        player.attackEntityFrom(DamageSource.GENERIC, life_to_drain);
+                        TFCWaystones.logger.info("hurting");
+                        //player.attackEntityFrom(DamageSource.GENERIC, life_to_drain);
+                        player.setHealth(player.getHealth() - life_to_drain);
                     }
                     //TFCWaystones.logger.info("Draining life: {}", getLife(stack));
-                    TFCWaystones.logger.info("Draining life: {}", tmp_life_stolen);
                     // Into the stone
-                    //addLife(stack, life_to_drain);
-                    tmp_life_stolen++;
-                }
-                else { // Stone is full
-                    player.resetActiveHand();
-                    tmp_life_stolen = 0;
-                    player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(TFCWaystones.WARP_STONE));
+                    LOCAL_CHARGE_DISP_VAL = time_used;
+                    //TFCWaystones.logger.info("Draining life: {}", tmp_life_stolen);
+                    TFCWaystones.logger.info("Draining life: {}", count);
+                    TFCWaystones.logger.info("Player hp: {}", player.getHealth());
+                } else { // Stone is full
+                    TFCWaystones.logger.info("Full stone detected");
+                    playerIn.stopActiveHand();
                 }
             }
         }
@@ -97,7 +117,7 @@ public class ItemEmptyWarpStone extends ItemTFC {
 
     @Override
     public int getMaxItemUseDuration(ItemStack itemStack) {
-        return 36000; // in ticks, 30 minutes
+        return USE_DURATION;
     }
 
     @Override
@@ -151,7 +171,7 @@ public class ItemEmptyWarpStone extends ItemTFC {
     @Override
     @SideOnly(Side.CLIENT)
     public double getDurabilityForDisplay(ItemStack stack) {
-        return 1 - ((getLife(stack) + tmp_life_stolen) / (double) MAX_LIFE);
+        return 1 - ((getLife(stack) + LOCAL_CHARGE_DISP_VAL) / (double) MAX_LIFE);
     }
 
 

@@ -29,6 +29,7 @@ public class TFCWaystones
     public static final String MOD_ID = "tfcwaystones";
     public static final String NAME = "TFC Waystones";
     public static final String VERSION = "0.0";
+    public static final float TFC_HP_MOD = 50.0f; // 50 is tfc's health display modifier
 
     @Mod.Instance
     private static TFCWaystones INSTANCE = null;

@@ -14,7 +14,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableSet;
+import net.minecraftforge.items.wrapper.PlayerOffhandInvWrapper;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class ItemObsidianKnife extends ItemTool implements IItemSize {
@@ -43,7 +46,7 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
     public static final double SACRIFICE_RANGE_BLOCKS = 2;
     public static final int SACRIFICE_DURATION_SECONDS = 3;
 
-    private EntityAnimal TARGET_ANIMAL;
+    private EntityAnimal TARGET_ANIMAL; // TODO: This is a global server var, will break with multiple players. Can't use this
 
     public ItemObsidianKnife() {
 
@@ -212,9 +215,8 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
                 float damageToDo = TARGET_ANIMAL.getMaxHealth();
                 TFCWaystones.logger.info("Doing {} points of damage to {}", damageToDo, TARGET_ANIMAL.getName());
                 TARGET_ANIMAL.setFire(10);
-                TARGET_ANIMAL.setDropItemsWhenDead(false);
                 TARGET_ANIMAL.attackEntityFrom(DamageSource.ON_FIRE, TARGET_ANIMAL.getMaxHealth());
-                TFCWaystones.EMPTY_WARP_STONE.addLife(player.getHeldItemOffhand(), (int)TARGET_ANIMAL.getMaxHealth());
+                TFCWaystones.EMPTY_WARP_STONE.addLife(player.getHeldItemOffhand(), (int)TARGET_ANIMAL.getMaxHealth() * (int)TFCWaystones.TFC_HP_MOD);
                 itemStack.damageItem(1, entityLiving);
             } else {
                 TFCWaystones.logger.info("No longer pointing at the animal");
@@ -223,8 +225,7 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
             ItemStack stone = entityLiving.getHeldItemOffhand();
             if (stone.getItem() == TFCWaystones.EMPTY_WARP_STONE &&
                     TFCWaystones.EMPTY_WARP_STONE.isCharged(stone)) { // If we've fully charged our stone
-                // TODO: -106 is the offhand inventory slot, find a constant for this or some way to programmatically do this
-                //player.inventory.setInventorySlotContents(-106, new ItemStack(TFCWaystones.WARP_STONE));
+                player.setHeldItem(EnumHand.OFF_HAND, new ItemStack(TFCWaystones.WARP_STONE));
             }
         }
 
@@ -241,7 +242,8 @@ public class ItemObsidianKnife extends ItemTool implements IItemSize {
                 TFCWaystones.logger.info("checking...");
                 if (!player.getEntityWorld().isRemote && player instanceof EntityPlayer) {
                     if (!isAnimalClickable((EntityPlayer) player, TARGET_ANIMAL)) {
-                        player.resetActiveHand();
+                        //player.resetActiveHand();
+                        player.stopActiveHand();
                     }
                 }
             }

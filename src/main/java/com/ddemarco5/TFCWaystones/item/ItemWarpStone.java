@@ -30,6 +30,8 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.List;
 
+//TODO: We need a better way to detect a teleportation other than a fall listener.
+
 @Mod.EventBusSubscriber
 public class ItemWarpStone extends net.blay09.mods.waystones.item.ItemWarpStone implements IItemSize {
 
@@ -179,7 +181,6 @@ public class ItemWarpStone extends net.blay09.mods.waystones.item.ItemWarpStone 
                 TFCWaystones.logger.info("Checking warpstone...");
                 if (item.getTagCompound().getInteger("Charges") <= 1) { // We used our last charge
                     TFCWaystones.logger.info("Ur out of charges bich");
-                    // TODO: Make this the uncharged waystone instead of empty
                     player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(TFCWaystones.EMPTY_WARP_STONE));
                 }
                 else { // We had charges and we use one
